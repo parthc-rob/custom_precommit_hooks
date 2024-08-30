@@ -46,13 +46,17 @@ cd $MONOREPO_ROOT
 PY_FILES=$(find ./ -not -path "./$DIRECTORY/*" -wholename '**/*.py' -type f 2>/dev/null)
 BAZEL_FILES=$(find ./ -not -path "./$DIRECTORY/*" -wholename '**/*.bazel' -type f 2>/dev/null)
 
+C_CPP_FILES=$(find ./ -not -path "./$DIRECTORY/*"  \( -wholename '**/*.c' -o -wholename '**/*.cc' -o -wholename '**/*.hh' -o -wholename '**/*.h' -o -wholename '**/*.cpp' -o -wholename '**/*.hpp' \)-type f 2>/dev/null)
+
 
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # print count of files found
-echo "Found $(echo $PY_FILES | wc -w) .py files"
-echo "Found $(echo $BAZEL_FILES | wc -w) .bazel files"
+echo -e "Found $(echo $PY_FILES | wc -w) .py files outside $DIRECTORY/"
+echo -e "Found $(echo $BAZEL_FILES | wc -w) .bazel files outside $DIRECTORY/"
+echo -e "Found $(echo $C_CPP_FILES | wc -w) C/C++ related files outside $DIRECTORY/"
+echo -e " Disallowed includes are already caught by deps present in BUILD.bazel files, so not parsing for mentions of $DIRECTORY."
 
 IS_FORBIDDEN=false
 for FILE in $PY_FILES; do
@@ -64,10 +68,11 @@ for FILE in $PY_FILES; do
 		echo -e "${RED}\n Error: $FILE imports from $DIRECTORY${NC}"
 		IS_FORBIDDEN=true
 	fi
-	if grep -Hn "alpha" $FILE; then
-		echo -e "${RED}\n Error: $FILE imports from $DIRECTORY${NC}"
-		IS_FORBIDDEN=true
-	fi
+	# Below grep ends up including comments / nonfunctional mentions of the word alpha
+	#if grep -Hn "alpha" $FILE; then
+	#	echo -e "${RED}\n Error: $FILE imports from $DIRECTORY${NC}"
+	#	IS_FORBIDDEN=true
+	#fi
 done
 
 for FILE in $BAZEL_FILES; do
