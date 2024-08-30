@@ -1,5 +1,5 @@
--   id: find_alpha_dependencies
-    name: Find alpha dependencies 
+-   id: find-alpha-dependencies
+    name: find-alpha-dependencies
     description: This checks for alpha dependencies in non-alpha folders across repo 
     entry: find_alpha_dependencies
     language: script
